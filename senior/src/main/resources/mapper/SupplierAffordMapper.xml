@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.SupplierAffordMapper">
+    <insert id="insertSupplierAfford" parameterType="com.erp.entity.SupplierAfford">
+        insert into erp_supplier_afford
+        <trim prefix="(" suffixOverrides="," suffix=")" >
+            affordId,purchaseItemId,supplier,supplierBehalfId,supplierBehalf,supplierBehalfContact,
+            arrivalDate,affirmAfford,
+            <if test="guaranteeContent != ''">
+                guaranteeContent,
+            </if>
+        </trim>
+        <trim prefix="values (" suffixOverrides="," suffix=")">
+            #{affordId},#{purchaseItemId},#{supplier},#{supplierBehalfId},#{supplierBehalf},#{supplierBehalfContact},
+            #{arrivalDate},#{affirmAfford},
+            <if test="guaranteeContent != ''">
+                #{guaranteeContent,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="affirmAfford" parameterType="java.lang.String">
+        update erp_supplier_afford set affirmAfford = '1' where affordId = #{affordId}
+    </update>
+
+    <select id="getSupplierAfford" parameterType="java.util.Map" resultType="com.erp.entity.SupplierAfford">
+        select * from erp_supplier_afford where purchaseItemId = #{purchaseItemId} and supplier = #{supplier}
+    </select>
+
+    <select id="getAffirmSupplierAfford" parameterType="java.util.Map" resultType="com.erp.entity.SupplierAfford">
+        select * from erp_supplier_afford where purchaseItemId = #{purchaseItemId} and affirmAfford = '1'
+    </select>
+
+    <select id="getOwnSupplierAffordList" parameterType="java.util.Map" resultMap="purchaseItemList">
+        select pi.* from erp_purchase_item pi
+        left join (select * from erp_supplier_afford where supplier = #{supplier} and affirmAfford = '1') as sa
+        on pi.purchaseItemId = sa.purchaseItemId
+        where pi.enables = '1' and pi.purchaseState not in ('0','1') and sa.affirmAfford = '1'
+        <if test="purchaseItemName != null and purchaseItemName != ''">
+            and pi.purchaseItemName like CONCAT(CONCAT ('%',#{purchaseItemName}),'%')
+        </if>
+        <if test="purchaseType != null and purchaseType != ''">
+            and pi.purchaseType = #{purchaseType}
+        </if>
+        <if test="purchaseState != null and purchaseState != ''">
+            and pi.purchaseState = #{purchaseState}
+        </if>
+    </select>
+    <resultMap id="purchaseItemList" type="java.util.Map">
+        <result column="purchaseItemId" property="purchaseItemId" jdbcType="VARCHAR"/>
+        <result column="purchaseItemName" property="purchaseItemName" jdbcType="VARCHAR"/>
+
+        <result column="purchaseType" property="purchaseType" jdbcType="VARCHAR"/>
+
+        <result column="budget" property="budget" jdbcType="DECIMAL"/>
+        <result column="budgetUnit" property="budgetUnit" jdbcType="VARCHAR"/>
+
+        <result column="userId" property="userId" jdbcType="VARCHAR"/>
+        <result column="purchaseApplicant" property="purchaseApplicant" jdbcType="VARCHAR"/>
+        <result column="purchaseApplicantContact" property="purchaseApplicantContact" jdbcType="VARCHAR"/>
+
+        <result column="purchaseApplyTime" property="purchaseApplyTime" jdbcType="DATE"/>
+        <result column="purchaseDeadline" property="purchaseDeadline" jdbcType="DATE"/>
+
+        <result column="purchaseItemContent" property="purchaseItemContent" jdbcType="VARCHAR"/>
+
+        <result column="purchaseState" property="purchaseState" jdbcType="VARCHAR"/>
+
+        <result column="Supplier" property="Supplier" jdbcType="VARCHAR"/>
+        <result column="SupplierBehalf" property="SupplierBehalf" jdbcType="VARCHAR"/>
+        <result column="SupplierBehalfContact" property="SupplierBehalfContact" jdbcType="VARCHAR"/>
+
+        <result column="enables" property="enables" jdbcType="VARCHAR"/>
+
+        <result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+    </resultMap>
+</mapper>

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.WeChatMapper">
+	<!--PurchaseII-->
+	<select id="getPurchaseList" resultMap="purchaseItemList">
+		select p.*,u.companyName from erp_purchase_item p right join
+		(select * from erp_user where companyName = #{companyName} and departmentName = #{departmentName}) as u
+		on p.purchaseApplicantId = u.userId where p.enables = '1'
+		<if test="purchaseItemName != null and purchaseItemName != ''">
+			and purchaseItemName like CONCAT(CONCAT ('%',#{purchaseItemName}),'%')
+		</if>
+		<if test="purchaseType != null and purchaseType != ''">
+			and purchaseType = #{purchaseType}
+		</if>
+		<if test="purchaseState != null and purchaseState != ''">
+			and purchaseState = #{purchaseState}
+		</if>
+	</select>
+
+	<select id="purchaseStatistics" parameterType="java.lang.String" resultType="java.util.Map">
+		select (case when purchaseState = '0' then '待建清单' else '待建清单' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item where purchaseState = '0' and purchaseApplicantId = #{userId} and enables = '1'
+		union
+		select (case when purchaseState = '1' then '采购中' else '采购中' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item where purchaseState = '1' and purchaseApplicantId = #{userId} and enables = '1'
+		union
+		select (case when purchaseState = '2' then '待确认供应商' else '待确认供应商' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item where purchaseState = '2' and purchaseApplicantId = #{userId} and enables = '1'
+		union
+		select (case when purchaseState = '3' then '待进货' else '待进货' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item where purchaseState = '3' and purchaseApplicantId = #{userId} and enables = '1'
+		union
+		select (case when purchaseState = '4' then '已完成' else '已完成' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item where purchaseState = '4' and purchaseApplicantId = #{userId} and enables = '1'
+		union
+		select (case when purchaseState = '5' then '已过期' else '已过期' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item where purchaseState = '5' and purchaseApplicantId = #{userId} and enables = '1'
+	</select>
+
+	<select id="getPurchaseListByState" resultMap="purchaseItemList">
+		select * from erp_purchase_item where enables = '1' and purchaseApplicantId = #{userId}
+		<if test="purchaseState != null and purchaseState != ''">
+			and purchaseState = #{purchaseState}
+		</if>
+	</select>
+	<resultMap id="purchaseItemList" type="java.util.Map">
+		<result column="purchaseItemId" property="purchaseItemId" jdbcType="VARCHAR"/>
+		<result column="purchaseItemName" property="purchaseItemName" jdbcType="VARCHAR"/>
+
+		<result column="purchaseType" property="purchaseType" jdbcType="VARCHAR"/>
+
+		<result column="budget" property="budget" jdbcType="DECIMAL"/>
+		<result column="budgetUnit" property="budgetUnit" jdbcType="VARCHAR"/>
+
+		<result column="userId" property="userId" jdbcType="VARCHAR"/>
+		<result column="purchaseApplicant" property="purchaseApplicant" jdbcType="VARCHAR"/>
+		<result column="purchaseApplicantContact" property="purchaseApplicantContact" jdbcType="VARCHAR"/>
+
+		<result column="purchaseApplyTime" property="purchaseApplyTime" jdbcType="DATE"/>
+		<result column="purchaseDeadline" property="purchaseDeadline" jdbcType="DATE"/>
+
+		<result column="purchaseItemContent" property="purchaseItemContent" jdbcType="VARCHAR"/>
+
+		<result column="purchaseState" property="purchaseState" jdbcType="VARCHAR"/>
+
+		<result column="Supplier" property="Supplier" jdbcType="VARCHAR"/>
+		<result column="SupplierBehalf" property="SupplierBehalf" jdbcType="VARCHAR"/>
+		<result column="SupplierBehalfContact" property="SupplierBehalfContact" jdbcType="VARCHAR"/>
+
+		<result column="enables" property="enables" jdbcType="VARCHAR"/>
+
+		<result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+
+	</resultMap>
+
+	<select id="supplierStatistics" parameterType="java.lang.String" resultType="java.util.Map">
+		select (case when pi.purchaseState = '2' then '待确认' else '待确认' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item pi,erp_supplier_afford sa
+		where pi.purchaseState = '2' and pi.enables = '1' and pi.purchaseItemId = sa.purchaseItemId and sa.supplierBehalfId = #{SupplierId}
+		union
+		select (case when purchaseState = '3' then '出货中' else '出货中' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item pi,erp_supplier_afford sa
+		where pi.purchaseState = '3' and pi.enables = '1' and pi.purchaseItemId = sa.purchaseItemId and sa.supplierBehalfId = #{SupplierId}
+		union
+		select (case when purchaseState = '4' then '已完成' else '已完成' end) as stateName,count(*) as stateNumber
+		from erp_purchase_item pi,erp_supplier_afford sa
+		where pi.purchaseState = '4' and pi.enables = '1' and pi.purchaseItemId = sa.purchaseItemId and sa.supplierBehalfId = #{SupplierId}
+	</select>
+
+	<select id="getSupplierListByState" resultMap="purchaseItemList">
+		select * from erp_purchase_item where supplierBehalfId = #{supplierBehalfId}
+		and purchaseState = #{purchaseState} and enables = '1'
+	</select>
+
+	<select id="getMembers" parameterType="java.util.Map" resultType="java.util.Map">
+		select * from erp_member where classId
+		in (select classId from erp_class where userId = #{userId} and className = #{className})
+	</select>
+
+	<select id="getProductDetail" parameterType="java.lang.String" resultType="java.util.Map">
+		select * from erp_product where productId = #{productId}
+	</select>
+
+	<select id="companyOrderStatistics" parameterType="java.lang.String" resultType="java.util.Map">
+		select (case o.orderState when '1' then '待发货' else '待发货' end) as stateName,count(*) as stateNum,'1' as orderState
+		from erp_order o where orderId in
+		(select distinct(orderId) from erp_order_detail where companyName = #{companyName}) and orderState = '1'
+		union
+		select (case o.orderState when '2' then '发货中' else '发货中' end) as stateName,count(*) as stateNum,'2' as orderState
+		from erp_order o where orderId in
+		(select distinct(orderId) from erp_order_detail where companyName = #{companyName}) and orderState = '2'
+		union
+		select (case o.orderState when '4' then '已完成' else '已完成' end) as stateName,count(*) as stateNum,'4' as orderState
+		from erp_order o where orderId in
+		(select distinct(orderId) from erp_order_detail where companyName = #{companyName}) and orderState = '4'
+	</select>
+
+	<update id="reduceCartNum">
+		update erp_order_detail
+		set productNumber = #{productNumber},totalPrice = #{totalPrice}
+		where orderDetailId = #{orderDetailId}
+	</update>
+
+	<select id="orderStatistics" parameterType="java.lang.String" resultType="java.util.Map">
+		select (case orderState when '1' then '待发货' else '待发货' end) as stateName,count(*) as stateNum,'1' as orderState
+		from erp_order where orderState = '1' and customerId = #{customerId}
+		union
+		select (case orderState when '2' then '发货中' else '发货中' end) as stateName,count(*) as stateNum,'2' as orderState
+		from erp_order where orderState = '2' and customerId = #{customerId}
+		union
+		select (case orderState when '4' then '已完成' else '已完成' end) as stateName,count(*) as stateNum,'4' as orderState
+		from erp_order where orderState = '4' and customerId = #{customerId}
+	</select>
+
+	<select id="userStatistics" resultType="java.util.Map">
+		select count(companyId) as countNum from erp_company
+		union all
+		select count(supplierId) as countNum from erp_supplier
+		union all
+		select count(userId) as countNum from erp_user where roleName = '管理员' and enables = '1'
+	</select>
+
+	<select id="warehouseI" parameterType="java.util.Map" resultType="java.util.Map">
+		select p.* from erp_product p,erp_product_record pr
+		where pr.operatorId = #{userId}
+		and p.productId = pr.productId
+		<if test="productTypeName != null and productTypeName != ''">
+			and productTypeName = #{productTypeName}
+		</if>
+		order by p.productId desc limit 5
+	</select>
+	<select id="warehouseIs" parameterType="java.util.Map" resultType="java.util.Map">
+		<trim prefix="select distinct" suffixOverrides="," suffix="">
+			p.productId,
+			<if test="productName != null and productName != ''">
+				p.productName,
+			</if>
+			<if test="productSpecification != null and productSpecification != ''">
+				p.productSpecification,
+			</if>
+			<if test="productUnit != null and productUnit != ''">
+				p.productUnit,
+			</if>
+			<if test="supplier != null and supplier != ''">
+				p.supplier,
+			</if>
+			<if test="priceUnit != null and priceUnit != ''">
+				p.priceUnit,
+			</if>
+		</trim>
+		from erp_product p,erp_product_record pr
+		where pr.operatorId = #{userId}
+		and p.productId = pr.productId
+		and p.productTypeName = #{productTypeName}
+		order by p.productId desc limit 5
+	</select>
+</mapper>

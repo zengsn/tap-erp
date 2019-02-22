@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.UserMapper">
+    <insert id="insertSystemUser" parameterType="com.erp.entity.User">
+        insert into erp_user
+        <trim prefix="(" suffixOverrides="," suffix=")" >
+            userId,userName,phone,email,enables,password,roleName,
+            <if test="companyName != ''">
+                companyName,
+            </if>
+            <if test="departmentName != ''">
+                departmentName,
+            </if>
+            <if test="supplierName != ''">
+                supplierName,
+            </if>
+        </trim>
+        <trim prefix="values (" suffixOverrides="," suffix=")">
+            #{userId},#{userName},#{phone},#{email},#{enables},#{password},#{roleName},
+            <if test="companyName != ''">
+                #{companyName,jdbcType=VARCHAR},
+            </if>
+            <if test="departmentName != ''">
+                #{departmentName,jdbcType=VARCHAR},
+            </if>
+            <if test="supplierName != ''">
+                #{supplierName,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <select id="getSystemUserList" parameterType="java.util.Map" resultMap="systemUserList">
+        select userId,userName,phone,email,companyName,departmentName,supplierName,roleName,enables
+        from erp_user where 1=1
+        <if test="userName != null and userName != ''">
+            and userName like CONCAT(CONCAT ('%',#{userName}),'%')
+        </if>
+        <if test="roleName != null and roleName != ''">
+            and roleName like CONCAT(CONCAT ('%',#{roleName}),'%')
+        </if>
+        <if test="companyName != null and companyName != ''">
+            and companyName = #{companyName}
+        </if>
+        <if test="departmentName != null and departmentName != ''">
+            and departmentName = #{departmentName}
+        </if>
+        <if test="supplierName != null and supplierName != ''">
+            and supplierName = #{supplierName}
+        </if>
+    </select>
+    <resultMap id="systemUserList" type="java.util.Map">
+        <result column="userId" property="userId" jdbcType="VARCHAR"/>
+        <result column="userName" property="userName" jdbcType="VARCHAR"/>
+        <result column="phone" property="phone" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+        <result column="departmentName" property="departmentName" jdbcType="VARCHAR"/>
+        <result column="supplierName" property="supplierName" jdbcType="VARCHAR"/>
+        <result column="roleName" property="roleName" jdbcType="VARCHAR"/>
+        <result column="enables" property="enables" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <update id="updateSystemUserByuserId" parameterType="com.erp.entity.User">
+        update erp_user set enables = '0' where userId = #{userId}
+    </update>
+
+    <select id="getUserInfoWX" parameterType="java.lang.String" resultType="com.erp.entity.User">
+        select * from erp_user where userName = #{userName}
+    </select>
+
+    <!--查找用户邮箱-->
+    <select id="getUserMail" parameterType="java.lang.String" resultType="String">
+        select email from erp_user where userId = #{userId}
+    </select>
+
+    <!--通过产品Id查找仓库人员邮箱-->
+
+</mapper>

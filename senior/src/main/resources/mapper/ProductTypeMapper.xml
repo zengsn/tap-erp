@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.ProductTypeMapper">
+    <select id="getByProductTypeParentId" parameterType="java.lang.String" resultType="com.erp.entity.ProductType">
+        select * from erp_product_type where productTypeParentId = #{productTypeId} and enables = '1'
+    </select>
+
+    <select id="getSimpleData" parameterType="java.lang.String" resultType="java.util.Map">
+        select * from erp_product_type where enables = '1' and companyName = #{companyName}
+    </select>
+</mapper>

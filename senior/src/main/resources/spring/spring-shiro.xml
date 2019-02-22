@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans  xmlns="http://www.springframework.org/schema/beans"
+    xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+                        http://www.springframework.org/schema/context    
+                        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+                        http://www.springframework.org/schema/mvc    
+                        http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd    
+                        http://www.springframework.org/schema/tx    
+                        http://www.springframework.org/schema/tx/spring-tx-4.3.xsd 
+                        http://mybatis.org/schema/mybatis-spring
+                        http://mybatis.org/schema/mybatis-spring.xsd">
+                        
+    
+	
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="sysBackRealm" />
+		<property name="sessionManager" ref="sessionManager" />
+	</bean>
+
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="deleteInvalidSessions" value="true"/>
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+    </bean>
+	
+	<bean id="sysBackRealm" class="com.erp.plugin.SysBackRealm"></bean>
+	
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+	    <property name="securityManager" ref="securityManager"/>
+	    <property name="loginUrl" value="/toLogin"/>
+	    <property name="unauthorizedUrl" value="/unauthorized.jsp"/>
+	    <property name="filterChainDefinitions">
+	        <value>
+	            /logout = anon
+	            /main/** = authc
+	        </value>
+	    </property>
+	</bean>                    
+</beans>
