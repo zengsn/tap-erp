@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.OrderMapper">
+
+    <select id="getOwnOrderList" parameterType="java.util.Map" resultMap="ownOrderListMap">
+        select * from erp_order where customerId = #{customerId}
+        <if test="orderState != null and orderState != ''">
+            and orderState = #{orderState}
+        </if>
+        order by orderId desc
+    </select>
+    <resultMap id="ownOrderListMap" type="java.util.Map">
+        <result column="orderId" property="orderId" jdbcType="VARCHAR"/>
+        <result column="orderStartTime" property="orderStartTime" jdbcType="DATE"/>
+        <result column="orderEndTime" property="orderEndTime" jdbcType="DATE"/>
+        <result column="payPattern" property="payPattern" jdbcType="VARCHAR"/>
+        <result column="payment" property="payment" jdbcType="DECIMAL"/>
+        <result column="priceUnit" property="priceUnit" jdbcType="VARCHAR"/>
+        <result column="orderState" property="orderState" jdbcType="VARCHAR"/>
+        <result column="customerId" property="customerId" jdbcType="VARCHAR"/>
+        <result column="customerName" property="customerName" jdbcType="VARCHAR"/>
+        <result column="customerMessage" property="customerMessage" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getOrderList" resultMap="ownOrderListMap">
+        select o.* from erp_order o where orderId in
+        (select distinct(orderId) from erp_order_detail where companyName = #{companyName})
+        <if test="orderState != null and orderState != ''">
+            and o.orderState = #{orderState}
+        </if>
+    </select>
+
+    <update id="updateOrderState">
+        update erp_order set orderState = #{orderState}
+        where orderId = #{orderId}
+    </update>
+
+    <insert id="buyProduct" parameterType="com.erp.entity.Order">
+        insert into erp_order values
+        (#{orderId},now(),now(),#{payPattern},#{payment},#{priceUnit},#{orderState},
+        #{customerId},#{customerName},#{customerMessage})
+    </insert>
+
+    <select id="getProductById" parameterType="java.lang.String" resultType="java.util.Map">
+        select * from erp_product where productId = #{productId}
+    </select>
+
+    <update id="updateInventoryById">
+        update erp_product set inventory = #{inventory},sales = #{sales}
+        where productId = #{productId}
+    </update>
+
+</mapper>

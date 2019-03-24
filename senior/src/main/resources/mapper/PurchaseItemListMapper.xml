@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.PurchaseItemListMapper">
+    <insert id="insertPurchaseItemList" parameterType="com.erp.entity.PurchaseItemList">
+        insert into erp_purchase_item_list values
+        (#{listId},#{purchaseItemId},#{productTypeName},#{productName},
+        #{productSpecification},#{productQuantity},#{productUnit},
+        #{unitPrice},#{budgetUnit})
+    </insert>
+
+    <select id="getPurchaseItemList" parameterType="java.lang.String" resultType="com.erp.entity.PurchaseItemList">
+        select * from erp_purchase_item_list where purchaseItemId = #{purchaseItemId}
+    </select>
+</mapper>

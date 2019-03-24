@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.SupplierMapper">
+    <select id="getSupplierList" parameterType="java.util.Map" resultMap="supplierList">
+        select * from erp_supplier where enables = 1
+        <if test="supplierName != null and supplierName != ''">
+            and supplierName like CONCAT(CONCAT ('%',#{supplierName}),'%')
+        </if>
+    </select>
+    <resultMap id="supplierList" type="java.util.Map">
+        <result column="supplierId" property="supplierId" jdbcType="VARCHAR"/>
+        <result column="supplierCode" property="supplierCode" jdbcType="VARCHAR"/>
+        <result column="supplierName" property="supplierName" jdbcType="VARCHAR"/>
+        <result column="supplierGeneralManager" property="supplierGeneralManager" jdbcType="VARCHAR"/>
+        <result column="supplierTel" property="supplierTel" jdbcType="VARCHAR"/>
+        <result column="supplierAddress" property="supplierAddress" jdbcType="VARCHAR"/>
+        <result column="companyBusiness" property="companyBusiness" jdbcType="VARCHAR"/>
+        <result column="enables" property="enables" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getPurchaseItemList" resultMap="purchaseItemList">
+        select pi.*,sa.affirmAfford from erp_purchase_item pi
+        left join
+        (select * from erp_supplier_afford where supplier = #{supplier}) as sa
+        on pi.purchaseItemId = sa.purchaseItemId
+        where pi.enables = '1' and pi.purchaseState = '1'
+        <if test="purchaseItemName != null and purchaseItemName != ''">
+            and pi.purchaseItemName like CONCAT(CONCAT ('%',#{purchaseItemName}),'%')
+        </if>
+        <if test="purchaseType != null and purchaseType != ''">
+            and pi.purchaseType = #{purchaseType}
+        </if>
+        order by pi.purchaseItemId desc
+    </select>
+    <resultMap id="purchaseItemList" type="java.util.Map">
+        <result column="purchaseItemId" property="purchaseItemId" jdbcType="VARCHAR"/>
+        <result column="purchaseItemName" property="purchaseItemName" jdbcType="VARCHAR"/>
+
+        <result column="purchaseType" property="purchaseType" jdbcType="VARCHAR"/>
+
+        <result column="budget" property="budget" jdbcType="DECIMAL"/>
+        <result column="budgetUnit" property="budgetUnit" jdbcType="VARCHAR"/>
+
+        <result column="userId" property="userId" jdbcType="VARCHAR"/>
+        <result column="purchaseApplicant" property="purchaseApplicant" jdbcType="VARCHAR"/>
+        <result column="purchaseApplicantContact" property="purchaseApplicantContact" jdbcType="VARCHAR"/>
+
+        <result column="purchaseApplyTime" property="purchaseApplyTime" jdbcType="DATE"/>
+        <result column="purchaseDeadline" property="purchaseDeadline" jdbcType="DATE"/>
+
+        <result column="purchaseItemContent" property="purchaseItemContent" jdbcType="VARCHAR"/>
+
+        <result column="purchaseState" property="purchaseState" jdbcType="VARCHAR"/>
+
+        <result column="Supplier" property="Supplier" jdbcType="VARCHAR"/>
+        <result column="SupplierBehalf" property="SupplierBehalf" jdbcType="VARCHAR"/>
+        <result column="SupplierBehalfContact" property="SupplierBehalfContact" jdbcType="VARCHAR"/>
+
+        <result column="enables" property="enables" jdbcType="VARCHAR"/>
+
+        <result column="affirmAfford" property="affirmAfford" jdbcType="VARCHAR"/>
+
+    </resultMap>
+</mapper>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.ProductMapper">
+    <select id="getProductList" parameterType="java.util.Map" resultMap="productList">
+        select * from erp_product where enables = '1' and companyName = #{companyName}
+        <if test="productTypeName != null and productTypeName != ''">
+            and productTypeName like CONCAT(CONCAT ('%',#{productTypeName}),'%')
+        </if>
+        <if test="productName != null and productName != ''">
+            and productName like CONCAT(CONCAT ('%',#{productName}),'%')
+        </if>
+        <if test="inputPrice != null and inputPrice != ''">
+            and inputPrice <![CDATA[ >= ]]> #{inputPrice}
+        </if>
+        <if test="outputPrice != null and outputPrice != ''">
+            and outputPrice <![CDATA[ <= ]]> #{outputPrice}
+        </if>
+    </select>
+    <resultMap id="productList" type="java.util.Map">
+        <result column="productId" property="productId" jdbcType="VARCHAR"/>
+        <result column="productTypeName" property="productTypeName" jdbcType="VARCHAR"/>
+        <result column="productName" property="productName" jdbcType="VARCHAR"/>
+        <result column="productUnit" property="productUnit" jdbcType="VARCHAR"/>
+        <result column="inputPrice" property="inputPrice" jdbcType="DECIMAL"/>
+        <result column="outputPrice" property="outputPrice" jdbcType="DECIMAL"/>
+        <result column="priceUnit" property="priceUnit" jdbcType="VARCHAR"/>
+        <result column="sales" property="sales" jdbcType="DECIMAL"/>
+        <result column="inventory" property="inventory" jdbcType="DECIMAL"/>
+        <result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+        <result column="supplier" property="supplier" jdbcType="VARCHAR"/>
+        <result column="productSpecification" property="productSpecification" jdbcType="VARCHAR"/>
+        <result column="productDescription" property="productDescription" jdbcType="VARCHAR"/>
+        <result column="enables" property="enables" jdbcType="VARCHAR"/>
+        <result column="image" property="image" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <insert id="insertProduct" parameterType="com.erp.entity.Product">
+        insert into erp_product
+        <trim prefix="(" suffixOverrides="," suffix=")">
+            productId,productTypeName,productName,productUnit,inputPrice,outputPrice,priceUnit,
+            inventory,companyName,supplier,productSpecification,enables,sales,image,
+            <if test="productDescription != null and productDescription != '' ">
+                productDescription,
+            </if>
+        </trim>
+        <trim prefix="values (" suffixOverrides="," suffix=")">
+            #{productId},#{productTypeName},#{productName},#{productUnit},
+            #{inputPrice},#{outputPrice},#{priceUnit},
+            #{inventory},#{companyName},#{supplier},#{productSpecification},#{enables},#{sales},#{image},
+            <if test="productDescription != null and productDescription != '' ">
+                #{productDescription},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateProduct" parameterType="com.erp.entity.Product">
+        update erp_product set
+        productTypeName = #{productTypeName},productName = #{productName},
+        inventory = #{inventory},productUnit = #{productUnit},supplier = #{supplier},
+        inputPrice = #{inputPrice},outputPrice = #{outputPrice},priceUnit = #{priceUnit},
+        productSpecification = #{productSpecification},productDescription = #{productDescription}
+        where productId = #{productId}
+    </update>
+
+    <update id="adjustProductPrice" parameterType="com.erp.entity.Product">
+        update erp_product set
+        outputPrice = #{outputPrice}
+        where productId = #{productId}
+    </update>
+
+    <update id="deleteProduct" parameterType="com.erp.entity.Product">
+        update erp_product set enables = '0'
+        where productId = #{productId}
+    </update>
+
+    <select id="getCustomerProductList" parameterType="java.util.Map" resultMap="customerProductList">
+        select productId,productTypeName,productName,productUnit,inputPrice,
+        outputPrice as unitPrice,priceUnit,inventory,sales,companyName,supplier,
+        productSpecification,productDescription,image
+        from erp_product where enables = '1'
+        <if test="productTypeName != null and productTypeName != ''">
+            and productTypeName like CONCAT(CONCAT ('%',#{productTypeName}),'%')
+        </if>
+        <if test="productName != null and productName != ''">
+            and productName like CONCAT(CONCAT ('%',#{productName}),'%')
+        </if>
+        <if test="minPrice != null and minPrice != ''">
+            and outputPrice <![CDATA[ >= ]]> #{minPrice}
+        </if>
+        <if test="maxPrice != null and maxPrice != ''">
+            and outputPrice <![CDATA[ <= ]]> #{maxPrice}
+        </if>
+    </select>
+    <resultMap id="customerProductList" type="java.util.Map">
+        <result column="productId" property="productId" jdbcType="VARCHAR"/>
+        <result column="productTypeName" property="productTypeName" jdbcType="DATE"/>
+        <result column="productName" property="productName" jdbcType="DATE"/>
+        <result column="productUnit" property="productUnit" jdbcType="VARCHAR"/>
+        <result column="unitPrice" property="unitPrice" jdbcType="DECIMAL"/>
+        <result column="priceUnit" property="priceUnit" jdbcType="VARCHAR"/>
+        <result column="inventory" property="inventory" jdbcType="DECIMAL"/>
+        <result column="sales" property="sales" jdbcType="VARCHAR"/>
+        <result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+        <result column="supplier" property="supplier" jdbcType="VARCHAR"/>
+        <result column="productSpecification" property="productSpecification" jdbcType="VARCHAR"/>
+        <result column="productDescription" property="productDescription" jdbcType="VARCHAR"/>
+        <result column="image" property="image" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--<select id="getCompanyByProductId" parameterType="java.lang.String" resultType="com.erp.entity.Company">-->
+        <!--select c.* from erp_product p,erp_company c-->
+        <!--where p.productId = #{productId}-->
+        <!--and c.companyName = p.companyName-->
+    <!--</select>-->
+    <select id="getCompanyByProductId" parameterType="java.lang.String" resultType="String">
+        select companyName from erp_product where productId = #{productId}
+    </select>
+</mapper>

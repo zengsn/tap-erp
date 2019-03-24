@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.CommonAjaxMapper">
+	<select id="queryRoleName" resultType="java.util.Map">
+		select roleCode,roleName from erp_role
+	</select>
+	<select id="queryDepartmentName" resultType="java.util.Map">
+		select departmentCode,departmentName from erp_department
+	</select>
+	<select id="queryCompanyName" resultType="java.util.Map">
+		select * from erp_company
+	</select>
+	<select id="querySupplierName" resultType="java.util.Map">
+		select supplierCode,supplierName from erp_supplier
+	</select>
+	<select id="queryPurchaseType" parameterType="java.lang.String" resultType="java.util.Map">
+		select * from erp_product_type
+		where productTypeParentId = #{prarentTypeId} and enables = '1'
+	</select>
+	<select id="queryProductTypeName" resultType="java.util.Map">
+		select * from erp_product_type
+		where productTypeParentId = #{prarentTypeId} and enables = '1'
+	</select>
+	<select id="queryParentTypeName" parameterType="java.lang.String" resultType="java.util.Map">
+		select * from erp_product_type
+		where companyName = #{companyName} and productTypeParentId = '0'
+	</select>
+	<select id="queryAllParentTypeName" resultType="java.util.Map">
+		select * from erp_product_type where productTypeParentId = '0'
+	</select>
+	<select id="getSimpleData" resultType="java.util.Map">
+		select * from erp_product_type where enables = '1'
+	</select>
+</mapper>

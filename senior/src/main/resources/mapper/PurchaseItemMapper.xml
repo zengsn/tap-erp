@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.PurchaseItemMapper">
+    <insert id="insertPurchaseItem" parameterType="com.erp.entity.PurchaseItem">
+        insert into erp_purchase_item
+        <trim prefix="(" suffixOverrides="," suffix=")" >
+            purchaseItemId,purchaseItemName,purchaseType,
+            budget,budgetUnit,purchaseApplicantId,purchaseApplicant,purchaseApplicantContact,
+            purchaseApplyTime,purchaseDeadline,
+            purchaseState,enables,
+            <if test="purchaseItemContent != ''">
+                purchaseItemContent,
+            </if>
+        </trim>
+        <trim prefix="values (" suffixOverrides="," suffix=")">
+            #{purchaseItemId},#{purchaseItemName},#{purchaseType},
+            #{budget},#{budgetUnit},#{purchaseApplicantId},#{purchaseApplicant},#{purchaseApplicantContact},
+            #{purchaseApplyTime},#{purchaseDeadline},
+            #{purchaseState},#{enables},
+            <if test="purchaseItemContent != ''">
+                #{purchaseItemContent,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <select id="getPurchaseItemList" resultMap="purchaseItemList">
+        select p.*,u.companyName from erp_purchase_item p right join
+        (select * from erp_user where companyName = #{companyName} and departmentName = #{departmentName}) as u
+        on p.purchaseApplicantId = u.userId where p.enables = '1'
+        <if test="purchaseItemName != null and purchaseItemName != ''">
+            and purchaseItemName like CONCAT(CONCAT ('%',#{purchaseItemName}),'%')
+        </if>
+        <if test="purchaseType != null and purchaseType != ''">
+            and purchaseType = #{purchaseType}
+        </if>
+        <if test="purchaseState != null and purchaseState != ''">
+            and purchaseState = #{purchaseState}
+        </if>
+        order by p.purchaseItemId desc
+    </select>
+    <resultMap id="purchaseItemList" type="java.util.Map">
+        <result column="purchaseItemId" property="purchaseItemId" jdbcType="VARCHAR"/>
+        <result column="purchaseItemName" property="purchaseItemName" jdbcType="VARCHAR"/>
+
+        <result column="purchaseType" property="purchaseType" jdbcType="VARCHAR"/>
+
+        <result column="budget" property="budget" jdbcType="DECIMAL"/>
+        <result column="budgetUnit" property="budgetUnit" jdbcType="VARCHAR"/>
+
+        <result column="userId" property="userId" jdbcType="VARCHAR"/>
+        <result column="purchaseApplicant" property="purchaseApplicant" jdbcType="VARCHAR"/>
+        <result column="purchaseApplicantContact" property="purchaseApplicantContact" jdbcType="VARCHAR"/>
+
+        <result column="purchaseApplyTime" property="purchaseApplyTime" jdbcType="DATE"/>
+        <result column="purchaseDeadline" property="purchaseDeadline" jdbcType="DATE"/>
+
+        <result column="purchaseItemContent" property="purchaseItemContent" jdbcType="VARCHAR"/>
+
+        <result column="purchaseState" property="purchaseState" jdbcType="VARCHAR"/>
+
+        <result column="Supplier" property="Supplier" jdbcType="VARCHAR"/>
+        <result column="SupplierBehalf" property="SupplierBehalf" jdbcType="VARCHAR"/>
+        <result column="SupplierBehalfContact" property="SupplierBehalfContact" jdbcType="VARCHAR"/>
+
+        <result column="enables" property="enables" jdbcType="VARCHAR"/>
+
+        <result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+    </resultMap>
+    <update id="updatePurchaseState" parameterType="java.util.Map">
+        update erp_purchase_item
+        <trim prefix="set" suffixOverrides=",">
+            <if test="purchaseState != null and purchaseState != ''">
+                purchaseState = #{purchaseState},
+            </if>
+            <if test="affordId != null and affordId != ''">
+                affordId = #{affordId},
+            </if>
+        </trim>
+        where purchaseItemId = #{purchaseItemId}
+    </update>
+
+    <update id="updatePurchaseItem" parameterType="java.util.Map">
+        update erp_purchase_item
+        <trim prefix="set" suffixOverrides=",">
+            <if test="purchaseState != null and purchaseState != ''">
+                purchaseState = #{purchaseState},
+            </if>
+            <if test="affordId != null and affordId != ''">
+                affordId = #{affordId},
+            </if>
+        </trim>
+        where purchaseItemId = #{purchaseItemId}
+    </update>
+
+    <update id="canclePurchase" parameterType="java.lang.String">
+        update erp_purchase_item set enables = '0' where purchaseItemId = #{purchaseItemId}
+    </update>
+
+    <update id="finishInsertPurchaseItemList" parameterType="java.util.Map">
+        update erp_purchase_item set purchaseState = #{purchaseState} where purchaseItemId = #{purchaseItemId}
+    </update>
+
+    <select id="getSupplierPurchaseItemList" resultMap="purchaseItemList">
+        select * from erp_purchase_item where enables = '1'
+        and purchaseState in ('1')
+        <if test="purchaseItemName != null and purchaseItemName != ''">
+            and purchaseItemName like CONCAT(CONCAT ('%',#{purchaseItemName}),'%')
+        </if>
+        <if test="purchaseType != null and purchaseType != ''">
+            and purchaseType = #{purchaseType}
+        </if>
+        <if test="purchaseState != null and purchaseState != ''">
+            and purchaseState = #{purchaseState}
+        </if>
+    </select>
+
+    <update id="affirmPurchase" parameterType="java.lang.String">
+        update erp_purchase_item pi left join erp_supplier_afford sa on pi.purchaseItemId = sa.purchaseItemId
+        set pi.Supplier = sa.supplier,pi.SupplierBehalf = sa.supplierBehalf,
+        pi.SupplierBehalfContact = sa.supplierBehalfContact
+        where sa.purchaseItemId = #{purchaseItemId} and sa.affirmAfford = '1'
+    </update>
+
+    <select id="getSinglePurchaseItem" parameterType="java.lang.String" resultType="com.erp.entity.PurchaseItem">
+        select pi.*,sa.arrivalDate,sa.guaranteeContent
+        from erp_purchase_item pi inner join erp_supplier_afford sa
+        on pi.purchaseItemId = sa.purchaseItemId
+        where pi.purchaseItemId = #{purchaseItemId}
+    </select>
+
+    <select id="getSupplierAffordByPurchaseItemId" parameterType="java.lang.String" resultType="com.erp.entity.SupplierAfford">
+        select * from erp_supplier_afford where purchaseItemId = #{purchaseItemId}
+    </select>
+    <select id="getSupplierAffirmAffordByPurchaseItemId" parameterType="java.lang.String" resultType="com.erp.entity.SupplierAfford">
+        select * from erp_supplier_afford where purchaseItemId = #{purchaseItemId} and affirmAfford = '1'
+    </select>
+
+</mapper>

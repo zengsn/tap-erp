@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.dao.OrderDetailMapper">
+    <insert id="insertOrderDetail" parameterType="com.erp.entity.OrderDetail">
+        insert into erp_order_detail values
+        (#{orderDetailId},#{orderId},#{customerId},#{companyName},#{productId},
+        #{productName},#{unitPrice},#{priceUnit},
+        #{productNumber},#{totalPrice},#{orderSign})
+    </insert>
+    <select id="getOwnCartList" parameterType="java.util.Map" resultMap="cartListMap">
+        select od.*,p.image,p.productTypeName,p.sales,p.inventory,p.productSpecification,p.productDescription
+        from erp_order_detail od,erp_product p
+        where customerId = #{customerId} and orderSign = '0' and od.productId = p.productId
+        <if test="productName != null and productName != ''">
+            and od.productName like CONCAT(CONCAT ('%',#{productName}),'%')
+        </if>
+    </select>
+    <resultMap id="cartListMap" type="java.util.Map">
+        <result column="orderDetailId" property="orderDetailId" jdbcType="VARCHAR"/>
+        <result column="orderId" property="orderId" jdbcType="VARCHAR"/>
+        <result column="customerId" property="customerId" jdbcType="VARCHAR"/>
+        <result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+        <result column="productId" property="productId" jdbcType="VARCHAR"/>
+        <result column="productName" property="productName" jdbcType="VARCHAR"/>
+        <result column="unitPrice" property="unitPrice" jdbcType="DECIMAL"/>
+        <result column="priceUnit" property="priceUnit" jdbcType="VARCHAR"/>
+        <result column="productNumber" property="productNumber" jdbcType="DECIMAL"/>
+        <result column="totalPrice" property="totalPrice" jdbcType="DECIMAL"/>
+        <result column="orderSign" property="orderSign" jdbcType="VARCHAR"/>
+        <result column="image" property="image" jdbcType="VARCHAR"/>
+        <result column="productTypeName" property="productTypeName" jdbcType="VARCHAR"/>
+        <result column="sales" property="sales" jdbcType="DECIMAL"/>
+        <result column="inventory" property="inventory" jdbcType="DECIMAL"/>
+        <result column="productSpecification" property="productSpecification" jdbcType="VARCHAR"/>
+        <result column="productDescription" property="productDescription" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <insert id="addToCart" parameterType="com.erp.entity.OrderDetail">
+        insert into erp_order_detail values
+        (#{orderDetailId},#{orderId},#{customerId},#{companyName},#{productId},
+        #{productName},#{unitPrice},#{priceUnit},
+        #{productNumber},#{totalPrice},#{orderSign})
+    </insert>
+    <select id="getOwnCart" parameterType="java.lang.String" resultMap="ownCart">
+        select od.*,p.image from erp_order_detail od,erp_product p
+        where customerId = #{customerId} and orderSign = '0' and od.productId = p.productId
+    </select>
+    <resultMap id="ownCart" type="java.util.Map">
+        <result column="orderDetailId" property="orderDetailId" jdbcType="VARCHAR"/>
+        <result column="orderId" property="orderId" jdbcType="VARCHAR"/>
+        <result column="customerId" property="customerId" jdbcType="VARCHAR"/>
+        <result column="companyName" property="companyName" jdbcType="VARCHAR"/>
+        <result column="productId" property="productId" jdbcType="VARCHAR"/>
+        <result column="productName" property="productName" jdbcType="VARCHAR"/>
+        <result column="unitPrice" property="unitPrice" jdbcType="DECIMAL"/>
+        <result column="priceUnit" property="priceUnit" jdbcType="VARCHAR"/>
+        <result column="productNumber" property="productNumber" jdbcType="DECIMAL"/>
+        <result column="totalPrice" property="totalPrice" jdbcType="DECIMAL"/>
+        <result column="orderSign" property="orderSign" jdbcType="VARCHAR"/>
+        <result column="image" property="image" jdbcType="VARCHAR"/>
+    </resultMap>
+    <update id="updateOwnCart" parameterType="com.erp.entity.OrderDetail">
+        update erp_order_detail set
+        productNumber = #{productNumber},totalPrice = #{totalPrice}
+        where orderDetailId = #{orderDetailId}
+    </update>
+
+    <delete id="deleteCart" parameterType="java.lang.String">
+        delete from erp_order_detail
+        where orderDetailId = #{orderDetailId}
+    </delete>
+
+    <select id="getProductByIds" parameterType="java.util.List" resultType="java.util.Map">
+        select * from erp_product where productId in
+        <foreach collection="productIds" item="productId" open="(" close=")" separator=",">
+            #{productId}
+        </foreach>
+    </select>
+    <update id="cartToOrder" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" separator=";">
+            update erp_order_detail set orderId = #{item.orderId} , orderSign = #{item.orderSign} where orderDetailId = #{item.orderDetailId}
+        </foreach>
+    </update>
+
+    <select id="getOrderDetailByOrderId" parameterType="java.lang.String" resultType="java.util.Map">
+        select o.orderId,o.orderStartTime,o.orderEndTime,
+        o.payPattern,o.payment,o.priceUnit,o.orderState,
+        o.customerId,o.customerName,o.customerMessage,
+        od.productId,od.productName,od.productNumber,od.unitPrice,
+        p.productTypeName,p.sales,p.inventory,p.productSpecification,p.productDescription,p.image
+        from erp_order o,erp_order_detail od,erp_product p
+        where o.orderId = #{orderId} and o.orderId = od.orderId and od.productId = p.productId
+    </select>
+</mapper>
